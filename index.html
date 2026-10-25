@@ -54,7 +54,6 @@ THIS PROGRAM IS NOT FULLY RELIANT ON GOOGLE'S CSE RESULTS! WE USE MULTIPLE API'S
   <link rel="stylesheet" href="https://360-search.com/assets/css/wide.css" />
   <link rel="stylesheet" href="https://360-search.com/assets/css/gallium.css" />
   <link rel="stylesheet" href="https://360-search.com/assets/css/responsive.css" />
-  <link rel="stylesheet" href="https://360-search.com/assets/css/cursor.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://360-search.com/assets/js/360-settings.js"></script>
 
@@ -2576,6 +2575,12 @@ THIS PROGRAM IS NOT FULLY RELIANT ON GOOGLE'S CSE RESULTS! WE USE MULTIPLE API'S
   </style>
 
   <style id="acadia-scholar-style">
+    /* Keep the operating-system pointer visible on Acadia. The main 360 cursor
+       enhancement is intentionally disabled here for the plain Scholar-style UI. */
+    html, html *, body, body * { cursor: auto !important; }
+    a, button, [role="button"], summary, input[type="button"], input[type="submit"],
+    input[type="checkbox"], input[type="radio"], select { cursor: pointer !important; }
+    input[type="text"], input[type="search"], input[type="email"], textarea { cursor: text !important; }
     html, body { background:#fff !important; color:#222 !important; font-family:Arial,Helvetica,sans-serif !important; font-size:13px !important; }
     body.acadia-mode { margin:0 !important; padding:0 !important; }
     .cursor-dot, .cursor-trail, .cursor-crosshair, .cursor-blob,
@@ -2912,7 +2917,6 @@ THIS PROGRAM IS NOT FULLY RELIANT ON GOOGLE'S CSE RESULTS! WE USE MULTIPLE API'S
   <script src="https://360-search.com/assets/js/wide.js"></script>
   <script src="https://360-search.com/assets/js/gallium.js"></script>
   <script src="https://360-search.com/assets/js/cookie.js"></script>
-  <script src="https://360-search.com/assets/js/cursor.js"></script>
   <!-- Load GCSE silently -->
   <script async src="https://cse.google.com/cse.js?cx=e003eb0834b6b4be8"></script>
 
@@ -5442,7 +5446,7 @@ THIS PROGRAM IS NOT FULLY RELIANT ON GOOGLE'S CSE RESULTS! WE USE MULTIPLE API'S
         let handoffUrl = '';
         try {
           const b64 = btoa(unescape(encodeURIComponent(text)));
-          handoffUrl = `ai.html?q=${encodeURIComponent(q)}&a=${encodeURIComponent(b64)}`;
+          handoffUrl = `https://360-search.com/ai/?q=${encodeURIComponent(q)}&a=${encodeURIComponent(b64)}`;
         } catch(e) {}
         card.innerHTML = `<div class="ai-response-label">${AI_ICON} AI Answer</div><div class="ai-response-text">${renderAiAnswerWithHighlight(text)}</div>
           ${handoffUrl ? `<a href="${escHtml(handoffUrl)}" style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:9px 16px;border-radius:10px;background:var(--a);color:#fff;text-decoration:none;font-size:13px;font-weight:600;">Continue this conversation →</a>` : ''}`;
