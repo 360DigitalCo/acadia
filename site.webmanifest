@@ -1,0 +1,10 @@
+{
+  "name": "Acadia Scholarly Search",
+  "short_name": "Acadia",
+  "description": "Scholarly search, citation discovery, and research library.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f4f6f8",
+  "icons": [{"src":"/assets/logo.png","sizes":"any","type":"image/png","purpose":"any maskable"}]
+}

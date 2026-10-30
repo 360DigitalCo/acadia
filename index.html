@@ -1,2 +1,132 @@
-<h1 style="text-align:center">acadia</h1>
-<p style="text-align:center">trust the web here.</p>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#f4f6f8">
+  <meta name="description" content="Search scholarly articles, authors, journals, institutions, citations, and open-access research across academic indexes.">
+  <meta property="og:title" content="Acadia — Scholarly Search">
+  <meta property="og:description" content="Find research, follow citations, build a library, and export citations.">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/png" href="/assets/logo.png">
+  <link rel="apple-touch-icon" href="/assets/logo.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="stylesheet" href="/styles.css">
+  <title>Acadia — Scholarly Search</title>
+  <script defer src="/app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Acadia home">
+      <img src="/assets/logo.png" alt="" width="42" height="42">
+      <span class="brand-copy"><strong>Acadia</strong><small>Scholarly search</small></span>
+    </a>
+    <form id="search-form" class="search-form" role="search">
+      <label class="sr-only" for="query">Search research</label>
+      <input id="query" name="q" type="search" list="recent-searches" placeholder="Search articles, authors, topics, DOI…" autocomplete="off" maxlength="400" spellcheck="false">
+      <datalist id="recent-searches"></datalist>
+      <button id="clear-query" class="icon-button clear-query" type="button" aria-label="Clear search" title="Clear search">×</button>
+      <button class="search-submit" type="submit">Search</button>
+    </form>
+    <button id="alerts-shortcut" class="header-link" type="button" title="Research alerts"><span aria-hidden="true">♧</span><span>Alerts</span></button>
+  </header>
+
+  <nav class="primary-nav" aria-label="Research tools">
+    <div class="nav-inner" id="view-nav">
+      <button class="nav-item active" data-view="articles" type="button">Articles</button>
+      <button class="nav-item" data-view="authors" type="button">Authors</button>
+      <button class="nav-item" data-view="journals" type="button">Journals</button>
+      <button class="nav-item" data-view="institutions" type="button">Institutions</button>
+      <span class="nav-divider" aria-hidden="true"></span>
+      <button class="nav-item" data-view="library" type="button">My library <span id="library-count" class="count-pill">0</span></button>
+      <button class="nav-item" data-view="alerts" type="button">Alerts</button>
+      <button class="nav-item" data-view="history" type="button">History</button>
+      <button class="nav-item" data-view="metrics" type="button">My research</button>
+      <span class="nav-spacer"></span>
+      <button class="nav-item external-nav" data-view="patents" type="button">Patents ↗</button>
+      <button class="nav-item external-nav" data-view="cases" type="button">Case law ↗</button>
+    </div>
+  </nav>
+
+  <main class="page-shell">
+    <section class="intro-row" id="intro-row">
+      <div>
+        <div class="eyebrow">RESEARCH DISCOVERY</div>
+        <h1 id="page-title">Find the work behind the idea.</h1>
+        <p id="page-description">Search across scholarly indexes, inspect citation trails, and keep the papers that matter.</p>
+      </div>
+      <button id="advanced-toggle" class="plain-button" type="button" aria-expanded="false" aria-controls="advanced-panel">Advanced search <span aria-hidden="true">⌄</span></button>
+    </section>
+
+    <section id="advanced-panel" class="advanced-panel" hidden>
+      <div class="advanced-grid">
+        <label>Exact phrase<input id="advanced-phrase" type="text" placeholder="e.g. retrieval augmented generation" maxlength="300"></label>
+        <label>Author<input id="advanced-author" type="text" placeholder="Author name" maxlength="160"></label>
+        <label>Publication / journal<input id="advanced-publication" type="text" placeholder="Journal or conference" maxlength="180"></label>
+        <label>Exclude words<input id="advanced-exclude" type="text" placeholder="term1, term2" maxlength="240"></label>
+        <label>Search within<select id="advanced-field"><option value="all">All fields</option><option value="title">Title only</option></select></label>
+        <label>Result type<select id="advanced-type"><option value="">Any type</option><option value="article">Journal article</option><option value="review">Review</option><option value="preprint">Preprint</option><option value="book">Book</option><option value="book-chapter">Book chapter</option><option value="dissertation">Thesis / dissertation</option><option value="conference-paper">Conference paper</option><option value="dataset">Dataset</option></select></label>
+      </div>
+      <div class="advanced-footer"><p>Advanced fields narrow metadata searches where the index supports them. Use DOI search for an exact record.</p><button id="advanced-apply" class="small-primary" type="button">Apply fields</button></div>
+    </section>
+
+    <div id="status-line" class="status-line" role="status" aria-live="polite"></div>
+
+    <div class="research-layout">
+      <aside id="filter-panel" class="filter-panel" aria-label="Search filters">
+        <div class="filter-head"><strong>Refine results</strong><button id="reset-filters" class="text-button" type="button">Reset</button></div>
+        <div class="filter-group">
+          <label for="year-from">Publication year</label>
+          <div class="year-range"><input id="year-from" type="number" min="1600" max="2100" placeholder="From" inputmode="numeric"><span>to</span><input id="year-to" type="number" min="1600" max="2100" placeholder="To" inputmode="numeric"></div>
+        </div>
+        <div class="filter-group">
+          <label for="sort-mode">Sort results</label>
+          <select id="sort-mode"><option value="relevance">Relevance</option><option value="recent">Newest first</option><option value="cited">Most cited</option></select>
+        </div>
+        <div class="filter-group">
+          <label for="type-filter">Publication type</label>
+          <select id="type-filter"><option value="">All types</option><option value="article">Journal article</option><option value="review">Review</option><option value="preprint">Preprint</option><option value="book">Book</option><option value="book-chapter">Book chapter</option><option value="dissertation">Thesis / dissertation</option><option value="conference-paper">Conference paper</option><option value="dataset">Dataset</option></select>
+        </div>
+        <div class="filter-group">
+          <label for="min-citations">Minimum citations</label>
+          <select id="min-citations"><option value="0">Any</option><option value="10">10+</option><option value="50">50+</option><option value="100">100+</option><option value="500">500+</option><option value="1000">1,000+</option></select>
+        </div>
+        <div class="filter-group checks">
+          <label class="check-line"><input id="open-access" type="checkbox"><span>Open access only</span></label>
+          <label class="check-line"><input id="with-abstract" type="checkbox"><span>Has abstract</span></label>
+        </div>
+        <button id="apply-filters" class="filter-apply" type="button">Apply filters</button>
+        <div class="filter-note"><span class="info-dot" aria-hidden="true">i</span><p>Coverage varies by index. Citation counts are database-specific and may differ from publisher totals.</p></div>
+      </aside>
+
+      <section id="content-column" class="content-column" aria-label="Search results">
+        <div id="results-toolbar" class="results-toolbar" hidden>
+          <div><strong id="results-heading">Results</strong><span id="results-subheading"></span></div>
+          <div class="toolbar-actions">
+            <button id="create-alert" class="plain-button compact" type="button">＋ Create alert</button>
+            <button id="export-selected" class="plain-button compact" type="button" disabled>Export selected <span id="selected-count">0</span></button>
+          </div>
+        </div>
+        <div id="results" class="results-list"></div>
+        <div id="pagination" class="pagination" hidden><button id="previous-page" type="button" class="plain-button" disabled>Previous</button><span id="page-indicator">Page 1</span><button id="next-page" type="button" class="plain-button">Next</button></div>
+      </section>
+    </div>
+
+    <footer class="site-footer">
+      <div><strong>Acadia</strong> <span>Scholarly discovery, without the guesswork.</span></div>
+      <p>Metadata from OpenAlex, Crossref, and Semantic Scholar. Source indicators describe metadata signals, not the validity of an individual claim.</p>
+      <button id="about-data" class="text-button" type="button">How sources and citation counts work</button>
+    </footer>
+  </main>
+
+  <div id="modal-root" class="modal-root" hidden>
+    <div class="modal-backdrop" data-modal-close></div>
+    <section class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">
+      <div class="modal-header"><div><div id="modal-kicker" class="eyebrow">ACADIA</div><h2 id="modal-title">Details</h2></div><button id="modal-close" class="modal-close" type="button" aria-label="Close dialog">×</button></div>
+      <div id="modal-content" class="modal-content"></div>
+    </section>
+  </div>
+  <div id="toast-region" class="toast-region" role="status" aria-live="polite"></div>
+</body>
+</html>
