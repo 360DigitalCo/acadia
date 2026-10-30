@@ -13,6 +13,7 @@
     settings: 'acadia.settings.v2'
   };
   const $ = (id) => document.getElementById(id);
+  let landingMode = 'articles';
   const state = {
     view: 'articles', query: '', page: 1, searchToken: 0, busy: false,
     results: [], allCount: null, canNext: false, activeAdvanced: false,
@@ -106,8 +107,15 @@
   }
   function setBusy(busy) {
     state.busy = busy;
-    const button = document.querySelector('.search-submit');
-    if (button) { button.disabled = busy; button.textContent = busy ? 'Searching…' : 'Search'; }
+    const button = document.querySelector('#search-form .search-submit');
+    if (button) {
+      button.disabled = busy;
+      const label = button.querySelector('span');
+      if (label) label.textContent = busy ? 'Searching…' : 'Search';
+      const icon = button.querySelector('.ui-icon');
+      if (icon) icon.hidden = !!busy;
+      if (!label) button.textContent = busy ? 'Searching…' : 'Search';
+    }
   }
   function setStatus(text) { $('status-line').textContent = text || ''; }
   function setActiveNav() {
@@ -158,6 +166,8 @@
     $('page-title').textContent = pair[0]; $('page-description').textContent = pair[1];
     const noFilters = ['authors', 'journals', 'institutions', 'library', 'alerts', 'history', 'metrics', 'patents', 'cases'].includes(state.view);
     const articleIdle = state.view === 'articles' && !state.query.trim();
+    document.body.classList.toggle('landing-active', articleIdle);
+    $('landing-shell').hidden = !articleIdle;
     $('intro-row').hidden = state.view === 'articles';
     if (state.view !== 'articles' && state.activeAdvanced) { state.activeAdvanced = false; $('advanced-panel').hidden = true; $('advanced-toggle').setAttribute('aria-expanded', 'false'); }
     $('filter-panel').hidden = noFilters || articleIdle;
@@ -448,16 +458,20 @@
     const checked = state.selected.has(work.key);
     const abstract = work.abstract || '';
     const abstractId = `abstract-${simpleHash(work.key)}`;
-    const meta = [work.source || work.publisher || host, formatYear(work.year), prettyType(work.type)].filter(Boolean).join(' · ');
+    const meta = [
+      (work.source || work.publisher || host) ? `<span class="meta-source" title="Journal, publisher, or indexed source">${escapeHTML(work.source || work.publisher || host)}</span>` : '',
+      work.year ? `<span class="meta-year" title="Publication year reported by the index">${escapeHTML(formatYear(work.year))}</span>` : '',
+      work.type ? `<span class="meta-type" title="Type of research item">${escapeHTML(prettyType(work.type))}</span>` : ''
+    ].filter(Boolean).join('<span class="meta-separator" aria-hidden="true">·</span>');
     const badges = [
       work.openAccess ? `<span class="result-badge oa" title="Open access means at least one indexed copy is reported as freely readable without a subscription.">${svgIcon('unlock')}<span>Open access</span></span>` : '',
       /preprint/i.test(work.type) ? `<span class="result-badge preprint" title="A preprint is a manuscript shared before or outside the final published journal version.">${svgIcon('file-pen')}<span>Preprint</span></span>` : '',
-      work.doi ? `<span class="result-badge" title="A DOI is a persistent digital identifier for a scholarly work.">${svgIcon('link')}<span>DOI: ${escapeHTML(work.doi)}</span></span>` : '',
+      work.doi ? `<span class="result-badge doi-badge" title="A DOI is a persistent digital identifier for a scholarly work.">${svgIcon('link')}<span>DOI: ${escapeHTML(work.doi)}</span></span>` : '',
       work.sourceApis && work.sourceApis.length > 1 ? `<span class="result-badge" title="This record combines metadata from more than one index.">${svgIcon('database')}<span>Combined metadata · ${escapeHTML(work.sourceApis.join(' + '))}</span></span>` : ''
     ].filter(Boolean).join('');
     const snippet = abstract ? escapeHTML(abstract.length > 460 ? `${abstract.slice(0, 457).trim()}…` : abstract) : `${work.source ? `Published in ${escapeHTML(work.source)}. ` : ''}${work.citations ? `Cited by ${formatNumber(work.citations)} works. ` : ''}Abstract not available in the indexed metadata.`;
     return `<article class="article-result" data-result-key="${escapeHTML(work.key)}">
-      <div class="result-topline"><span class="result-meta">${escapeHTML(meta)}</span><span class="source-signal" title="Estimated from source type and domain; not a paper-level fact check"><span class="signal-bar"><span style="width:${signal.score}%"></span></span>${signal.score}/100 · ${escapeHTML(signal.label)}</span></div>
+      <div class="result-topline"><span class="result-meta">${meta}</span><span class="source-signal signal-${escapeHTML(signal.kind)}" title="Source metadata context only; not a quality rating or fact check"><span class="signal-bar"><span style="width:${signal.score}%"></span></span>${signal.score}/100 · ${escapeHTML(signal.label)}</span></div>
       <h2 class="result-title"><input class="result-select" type="checkbox" aria-label="Select ${escapeHTML(work.title)} for export" data-select-work="${escapeHTML(work.key)}" ${checked ? 'checked' : ''}><a href="${escapeHTML(link || '#')}" ${link ? 'target="_blank" rel="noopener noreferrer"' : 'data-action="work-details" data-work="' + escapeHTML(work.key) + '"'}>${escapeHTML(work.title)}</a></h2>
       <p class="result-authors">${authorButtons(work)}</p>
       <p class="result-snippet" id="${abstractId}">${snippet}</p>
@@ -467,7 +481,7 @@
         <button type="button" class="result-action ${saved ? 'saved' : ''}" data-action="save-work" data-work="${escapeHTML(work.key)}" title="Save this paper to your browser's local library">${saved ? `${svgIcon('bookmark-check')}<span>Saved</span>` : `${svgIcon('bookmark')}<span>Save</span>`}</button>
         <button type="button" class="result-action" data-action="cite-work" data-work="${escapeHTML(work.key)}" title="Create a formatted citation or export a reference file">${svgIcon('quote')}<span>Cite</span></button>
         <button type="button" class="result-action result-abstract-toggle" data-action="toggle-abstract" data-work="${escapeHTML(work.key)}" data-target="${abstractId}" aria-expanded="false" title="Expand or collapse the abstract text">${svgIcon('align-left')}<span>${abstract ? 'Show abstract' : 'Metadata'}</span></button>
-        ${work.openAlexId ? `<button type="button" class="result-action" data-action="cited-by" data-work="${escapeHTML(work.key)}" title="Open indexed papers that cite this work">${svgIcon('quote')}<span>Cited by ${formatNumber(work.citations)}</span></button>` : work.citations ? `<span class="result-action passive" title="Citation count supplied by the index; it may differ from other databases.">${svgIcon('quote')}<span>Cited by ${formatNumber(work.citations)}</span></span>` : ''}
+        ${work.openAlexId ? `<button type="button" class="result-action citation-count" data-action="cited-by" data-work="${escapeHTML(work.key)}" title="Open indexed papers that cite this work">${svgIcon('quote')}<span>Cited by ${formatNumber(work.citations)}</span></button>` : work.citations ? `<span class="result-action passive citation-count" title="Citation count supplied by the index; it may differ from other databases.">${svgIcon('quote')}<span>Cited by ${formatNumber(work.citations)}</span></span>` : ''}
         ${work.openAlexId && work.related && work.related.length ? `<button type="button" class="result-action" data-action="related" data-work="${escapeHTML(work.key)}" title="Open papers the index considers related; this is not a quality rating">${svgIcon('network')}<span>Related articles</span></button>` : ''}
         ${work.locations && work.locations.length > 1 ? `<button type="button" class="result-action" data-action="versions" data-work="${escapeHTML(work.key)}" title="Show alternate publisher or repository copies">${svgIcon('layers')}<span>All versions (${work.locations.length})</span></button>` : ''}
         ${work.pdfUrl ? `<a class="result-action" href="${escapeHTML(work.pdfUrl)}" target="_blank" rel="noopener noreferrer" title="Open the indexed PDF copy">${svgIcon('file-down')}<span>PDF</span>${svgIcon('external-link')}</a>` : work.oaUrl ? `<a class="result-action" href="${escapeHTML(work.oaUrl)}" target="_blank" rel="noopener noreferrer" title="Open the available open-access copy">${svgIcon('unlock')}<span>Open access</span>${svgIcon('external-link')}</a>` : ''}
@@ -1049,12 +1063,52 @@
     else if (action === 'enable-notifications') enableNotifications();
   }
 
+  // Homepage collection picker. It changes only the selected collection until a query is submitted.
+  function selectLandingMode(mode) {
+    landingMode = ['articles', 'cases', 'patents'].includes(mode) ? mode : 'articles';
+    document.querySelectorAll('[data-landing-mode]').forEach((button) => {
+      const selected = button.dataset.landingMode === landingMode;
+      button.classList.toggle('is-selected', selected);
+      button.setAttribute('aria-checked', String(selected));
+      button.tabIndex = selected ? 0 : -1;
+    });
+  }
+  document.querySelector('.landing-modes').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-landing-mode]');
+    if (button) selectLandingMode(button.dataset.landingMode);
+  });
+  document.querySelector('.landing-modes').addEventListener('keydown', (event) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    const buttons = [...document.querySelectorAll('[data-landing-mode]')];
+    const current = buttons.findIndex((button) => button.dataset.landingMode === landingMode);
+    let next = current;
+    if (event.key === 'ArrowLeft') next = (current + buttons.length - 1) % buttons.length;
+    if (event.key === 'ArrowRight') next = (current + 1) % buttons.length;
+    if (event.key === 'Home') next = 0;
+    if (event.key === 'End') next = buttons.length - 1;
+    if (next !== current) { event.preventDefault(); selectLandingMode(buttons[next].dataset.landingMode); buttons[next].focus(); }
+  });
+  $('landing-search-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const query = $('landing-query').value.trim();
+    if (!query) { $('landing-query').focus(); return; }
+    state.view = landingMode;
+    state.query = query; state.page = 1;
+    $('query').value = query;
+    $('clear-query').classList.toggle('visible', !!query);
+    getCurrentFilters(); updateIntro(); runCurrentSearch(1);
+  });
+
   // Main UI events.
   $('search-form').addEventListener('submit', (event) => {
     event.preventDefault(); state.query = $('query').value.trim(); state.page = 1; getCurrentFilters(); updateIntro(); runCurrentSearch(1);
   });
-  $('clear-query').addEventListener('click', () => { $('query').value = ''; state.query = ''; $('query').focus(); $('clear-query').classList.remove('visible'); updateIntro(); syncSearchURL(); emptyState(); setStatus(''); });
-  $('query').addEventListener('input', () => $('clear-query').classList.toggle('visible', !!$('query').value));
+  $('clear-query').addEventListener('click', () => {
+    $('query').value = ''; $('landing-query').value = ''; state.query = ''; state.view = 'articles';
+    selectLandingMode('articles'); $('clear-query').classList.remove('visible');
+    updateIntro(); syncSearchURL(); emptyState(); setStatus(''); $('landing-query').focus();
+  });
+  $('query').addEventListener('input', () => { $('clear-query').classList.toggle('visible', !!$('query').value); $('landing-query').value = $('query').value; });
   $('view-nav').addEventListener('click', (event) => {
     const button = event.target.closest('[data-view]'); if (!button) return;
     setView(button.dataset.view);
@@ -1109,32 +1163,31 @@
     if (q !== state.query || view !== state.view) { state.query = q; $('query').value = q; state.view = view; updateIntro(); runCurrentSearch(1); }
   });
 
-  // Small pointer ripples restore Acadia's lightweight click feedback without
-  // changing element layout or intercepting normal controls.
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    document.addEventListener('pointerdown', (event) => {
-      if (event.button !== 0 || event.isPrimary === false) return;
-      const target = event.target;
-      if (!(target instanceof Element)) return;
-      if (!target.closest('button, a, input, select, textarea, summary, [role="button"], .nav-item, .article-result, .author-result, .entity-result')) return;
-      const ripple = document.createElement('span');
-      ripple.className = 'pointer-ripple';
-      ripple.setAttribute('aria-hidden', 'true');
-      ripple.style.left = `${event.clientX}px`;
-      ripple.style.top = `${event.clientY}px`;
-      document.body.appendChild(ripple);
-      ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
-      window.setTimeout(() => ripple.remove(), 800);
-    }, { passive: true });
-  }
+  // Viewport ripple: stays above cards and is not clipped by overflow or hidden by reduced-motion settings.
+  document.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0 || event.isPrimary === false) return;
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (!target.closest('button, a, input, select, textarea, summary, [role="button"], .nav-item, .article-result, .author-result, .entity-result')) return;
+    const ripple = document.createElement('span');
+    ripple.className = 'pointer-ripple';
+    ripple.setAttribute('aria-hidden', 'true');
+    ripple.style.left = `${event.clientX}px`;
+    ripple.style.top = `${event.clientY}px`;
+    document.body.appendChild(ripple);
+    const removeRipple = () => { if (ripple.isConnected) ripple.remove(); };
+    ripple.addEventListener('animationend', removeRipple, { once: true });
+    window.setTimeout(removeRipple, 900);
+  }, { passive: true });
 
   // Restore supported UI state from URL/local storage; do not make background requests.
   populateRecentSearches();
   $('library-count').textContent = String(state.library.length);
   const initialParams = new URLSearchParams(window.location.search);
   state.query = initialParams.get('q') || '';
-  $('query').value = state.query; $('clear-query').classList.toggle('visible', !!state.query);
+  $('query').value = state.query; $('landing-query').value = state.query; $('clear-query').classList.toggle('visible', !!state.query);
   const initialView = initialParams.get('view'); if (initialView && ['articles', 'authors', 'journals', 'institutions', 'library', 'alerts', 'history', 'metrics', 'patents', 'cases'].includes(initialView)) state.view = initialView;
+  selectLandingMode(['articles', 'cases', 'patents'].includes(state.view) ? state.view : 'articles');
   state.advanced = { ...state.advanced, ...(state.settings.advanced || {}) };
   state.filters = { ...state.filters, ...(state.settings.filters || {}) };
   $('advanced-phrase').value = state.advanced.phrase; $('advanced-author').value = state.advanced.author; $('advanced-publication').value = state.advanced.publication;

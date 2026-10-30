@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="A plain-language guide to Acadia's result colors, research labels, citations, and search tools.">
+  <link rel="icon" type="image/png" href="/assets/logo.png">
+  <link rel="stylesheet" href="/styles.css">
+  <title>Acadia Information — Color Key & Research Guide</title>
+  <style>
+    body.info-page{background:#fff;color:#26313b}
+    .info-top{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px max(18px,calc((100vw - 980px)/2));border-bottom:1px solid #e0e5ea}
+    .info-brand{display:flex;align-items:center;gap:9px;color:#202124;font-weight:700;text-decoration:none}
+    .info-brand img{width:34px;height:34px;object-fit:contain}
+    .info-home{color:#205b91;font-size:13px}
+    .info-wrap{max-width:980px;margin:0 auto;padding:32px 22px 60px}
+    .info-wrap h1{font-size:32px;font-weight:600;letter-spacing:-.7px;color:#1c2b38;margin:0 0 9px}
+    .info-lead{font-size:16px;line-height:1.65;color:#566474;max-width:760px;margin:0 0 28px}
+    .info-section{margin:30px 0}
+    .info-section h2{font-size:21px;letter-spacing:-.2px;color:#263b4d;margin:0 0 10px}
+    .info-section>p{color:#4e5d69;font-size:14px;line-height:1.7;max-width:860px}
+    .color-key{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .key-row{display:flex;align-items:flex-start;gap:12px;padding:13px;border:1px solid #e0e6ec;border-radius:7px;background:#fff}
+    .key-swatch{flex:0 0 14px;width:14px;height:14px;margin-top:5px;border-radius:4px;border:1px solid currentColor}
+    .key-copy strong{display:block;font-size:13px;margin:0 0 3px;color:#263b4d}
+    .key-copy p{margin:0;color:#596774;font-size:12.5px;line-height:1.55}
+    .swatch-title{color:#135ba1;background:#e7f0fc}.swatch-author{color:#187044;background:#e7f7ed}.swatch-source{color:#6b42a1;background:#f3edfc}.swatch-year{color:#a45b0a;background:#fff0dc}.swatch-type{color:#08767b;background:#e8f7f7}.swatch-oa{color:#17683c;background:#d9f3e3}.swatch-preprint{color:#9a610c;background:#fff0d3}.swatch-doi{color:#7547a9;background:#eee3fc}.swatch-citation{color:#a45b0a;background:#fff0dc}.swatch-signal{color:#278456;background:#e7f7ed}
+    .info-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+    .info-table th,.info-table td{padding:12px 10px;text-align:left;vertical-align:top;border-bottom:1px solid #e2e7ec;line-height:1.6}
+    .info-table th{width:225px;color:#2a4154;font-weight:700;background:#f7f9fb}
+    .info-note{padding:13px 15px;border-left:4px solid #c89137;background:#fff7e8;color:#6b4b18;font-size:13px;line-height:1.65;border-radius:0 4px 4px 0}
+    .info-footer{margin-top:36px;border-top:1px solid #e0e5ea;padding-top:15px;color:#74808a;font-size:12px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px}
+    .info-wrap a{color:#185d9a}
+    @media(max-width:680px){.color-key{grid-template-columns:1fr}.info-wrap{padding:25px 16px 42px}.info-wrap h1{font-size:27px}.info-table th{width:135px}.info-table th,.info-table td{padding:9px 7px}.info-top{padding:12px 15px}}
+  </style>
+</head>
+<body class="info-page">
+  <header class="info-top">
+    <a class="info-brand" href="/"><img src="/assets/logo.png" alt=""><span>Acadia</span></a>
+    <a class="info-home" href="/">Back to search</a>
+  </header>
+  <main class="info-wrap">
+    <h1>How to read Acadia</h1>
+    <p class="info-lead">A quick guide to the colors, labels, numbers, and buttons in search results. The colors identify what a piece of information means. They do <strong>not</strong> grade a paper or tell you whether its claims are true.</p>
+
+    <section class="info-section" id="color-key">
+      <h2>Color key</h2>
+      <div class="color-key">
+        <div class="key-row"><span class="key-swatch swatch-title"></span><div class="key-copy"><strong>Blue: paper title</strong><p>Open the publisher page, repository record, or indexed version of the paper.</p></div></div>
+        <div class="key-row"><span class="key-swatch swatch-author"></span><div class="key-copy"><strong>Green: authors</strong><p>Names of the people listed as authors. A clickable name opens the indexed author profile when one is available.</p></div></div>
+        <div class="key-row"><span class="key-swatch swatch-source"></span><div class="key-copy"><strong>Purple: journal or source</strong><p>Where the work is listed, such as a journal, conference, publisher, or repository. Check the original record for publication status.</p></div></div>
+        <div class="key-row"><span class="key-swatch swatch-year"></span><div class="key-copy"><strong>Orange: year and citation count</strong><p>The reported publication year and how many works this index says cite the paper. A high number is not a quality score.</p></div></div>
+        <div class="key-row"><span class="key-swatch swatch-type"></span><div class="key-copy"><strong>Teal: publication type</strong><p>The kind of record, such as article, review, book, dataset, thesis, conference paper, or preprint.</p></div></div>
+        <div class="key-row"><span class="key-swatch swatch-oa"></span><div class="key-copy"><strong>Green badge: Open access</strong><p>An index reports that a free-to-read copy is available. It may be a repository manuscript rather than the publisher-formatted paper.</p></div></div>
+        <div class="key-row"><span class="key-swatch swatch-preprint"></span><div class="key-copy"><strong>Gold badge: Preprint</strong><p>A manuscript shared before or outside the final peer-reviewed journal version. Look for a published version before citing it.</p></div></div>
+        <div class="key-row"><span class="key-swatch swatch-doi"></span><div class="key-copy"><strong>Violet: DOI</strong><p>A persistent identifier used to find a work even if the publisher changes its web address.</p></div></div>
+        <div class="key-row"><span class="key-swatch swatch-signal"></span><div class="key-copy"><strong>Source-context meter</strong><p>A heuristic based on source-domain and metadata hints. It is not a paper-quality grade, peer-review guarantee, or fact-check.</p></div></div>
+      </div>
+    </section>
+
+    <section class="info-section" id="result-actions">
+      <h2>What the result buttons do</h2>
+      <table class="info-table">
+        <tbody>
+          <tr><th>Details</th><td>Opens the metadata Acadia has for a work, including identifiers, abstract, source, versions, and available links.</td></tr>
+          <tr><th>Save</th><td>Adds the record to <em>My library</em> in this browser. Saved records are not synced to an account or another device.</td></tr>
+          <tr><th>Cite</th><td>Creates a formatted reference in APA, MLA, Chicago, IEEE, BibTeX, or RIS. Always check the generated citation against the original record.</td></tr>
+          <tr><th>Show abstract</th><td>Expands or collapses a short summary of the study. An abstract is not the full paper; a missing abstract in Acadia does not mean the paper has none.</td></tr>
+          <tr><th>Cited by N</th><td>Opens indexed works that cite this item when citation links are available. Counts and link lists may be incomplete or different in other databases.</td></tr>
+          <tr><th>Related articles</th><td>Shows records the index considers related. Similarity does not mean the papers agree, are equally reliable, or cite each other.</td></tr>
+          <tr><th>All versions</th><td>Lists alternate publisher, repository, and manuscript copies associated with the same work. Check dates and versions before using a copy.</td></tr>
+          <tr><th>PDF / Open access</th><td>Opens a free full-text link supplied by an index, if one is available. Access can change and the version may be a preprint or accepted manuscript.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="info-section" id="terms">
+      <h2>Research terms in plain English</h2>
+      <table class="info-table">
+        <tbody>
+          <tr><th>DOI</th><td><strong>Digital Object Identifier.</strong> A stable identifier, often shown like <code>10.1234/example.56</code>. Visiting <code>https://doi.org/...</code> usually forwards you to the current record. A DOI does not prove the paper is correct or peer-reviewed.</td></tr>
+          <tr><th>Abstract</th><td>A short explanation of a paper's question, methods, results, and sometimes limitations. It is a summary, not a replacement for reading the study.</td></tr>
+          <tr><th>Metadata</th><td>Facts describing a work: title, authors, publication, date, DOI, source links, and citations. Metadata is submitted by different organizations and can be missing or inaccurate.</td></tr>
+          <tr><th>Citations</th><td>Other works an index has identified as referring to this work. Databases count different material and match references differently, so the totals often disagree.</td></tr>
+          <tr><th>Peer review</th><td>A review process where other experts assess a research submission before publication. A journal label alone does not guarantee that a particular version has passed peer review.</td></tr>
+          <tr><th>Preprint</th><td>A manuscript made public before formal journal peer review or outside the final published version. It can still be useful, but findings may change.</td></tr>
+          <tr><th>Open access</th><td>A work or version that can be read without a subscription under the available access terms. Free-to-read does not automatically mean free to reuse.</td></tr>
+          <tr><th>h-index</th><td>An author-level metric: an h-index of 8 means the indexed record has at least 8 works cited at least 8 times each. It depends strongly on field, career length, and database coverage.</td></tr>
+          <tr><th>i10-index</th><td>The number of indexed works that have at least 10 citations. Different indexes may show different values.</td></tr>
+          <tr><th>Journal / publisher / repository</th><td>A journal publishes scholarly articles; a publisher distributes them; a repository hosts copies such as preprints or accepted manuscripts. Some records may appear in more than one place.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="info-section" id="search-tools">
+      <h2>Search and filter tools</h2>
+      <table class="info-table">
+        <tbody>
+          <tr><th>Articles</th><td>Search scholarly records from OpenAlex, Crossref, and Semantic Scholar. These are bibliographic indexes, not every web page or paper ever published.</td></tr>
+          <tr><th>Case law</th><td>Opens specialist legal-search services for court opinions. Confirm the jurisdiction, court, date, and whether a decision is still good law before relying on it.</td></tr>
+          <tr><th>Patents</th><td>Opens patent-search services. Patent records describe applications and grants; a patent's existence is not proof that an invention works or is legally valid in every country.</td></tr>
+          <tr><th>Limit to websites</th><td>Enter domains separated by commas, for example <code>nature.com, arxiv.org, nih.gov</code>. Acadia keeps results whose indexed publisher, repository, or PDF links match those hosts. It filters returned metadata; it does not crawl the entire site.</td></tr>
+          <tr><th>Publication year</th><td>Limits results to the selected range recorded by an index. Items with missing dates may not appear inside a year-filtered search.</td></tr>
+          <tr><th>Minimum citations</th><td>Shows works that meet the selected reported citation count. The count can be delayed, incomplete, or different elsewhere.</td></tr>
+          <tr><th>Open access only / Has abstract</th><td>Restricts records to those where available metadata marks an open-access copy or supplies an abstract. Missing metadata is not proof that no copy or abstract exists.</td></tr>
+          <tr><th>Sort</th><td><strong>Relevance</strong> follows index ranking; <strong>Newest first</strong> sorts by indexed year; <strong>Most cited</strong> sorts by the count available to Acadia.</td></tr>
+          <tr><th>Advanced search</th><td>Can limit to an exact phrase, author, publication, title-only matches, excluded terms, or a document type when the index supports that filter.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="info-section" id="data-and-privacy">
+      <h2>Where information comes from</h2>
+      <p><strong>OpenAlex</strong> provides broad records for works, authors, journals, institutions, citations, and access links. <strong>Crossref</strong> provides DOI registration and publisher-deposited metadata. <strong>Semantic Scholar</strong> supplies scholarly graph records, abstracts, citation links, and some full-text links. The indexes overlap, and each has gaps or delays.</p>
+      <p>Saved papers, search history, and saved alerts live in your browser's local storage. They are not synchronized to an Acadia account. Clearing browser data can erase them. The patent and case-law options currently open specialist sites directly rather than showing those sites' records as Acadia-hosted results.</p>
+      <div class="info-note"><strong>Use more than one signal.</strong> Read the abstract and methods, check the publication date and version, follow the DOI to the original record, look for corrections or retractions, and compare important claims with independent research. Citation counts, source colors, and source-context meters cannot tell you on their own whether a claim is true.</div>
+    </section>
+    <footer class="info-footer"><span>Acadia · Research discovery and reference tools</span><a href="/">Return to search</a></footer>
+  </main>
+</body>
+</html>

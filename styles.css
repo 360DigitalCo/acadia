@@ -54,7 +54,7 @@
 /* The ripple is a viewport overlay, so it never clips result text or shifts layout. */
 .pointer-ripple{position:fixed;z-index:2000;width:18px;height:18px;left:0;top:0;border:1.5px solid rgba(52,105,153,.72);border-radius:50%;background:rgba(93,151,202,.11);box-shadow:0 0 0 3px rgba(93,151,202,.08);pointer-events:none;transform:translate(-50%,-50%) scale(.25);animation:acadia-ripple 620ms cubic-bezier(.15,.65,.25,1) forwards}
 @keyframes acadia-ripple{0%{opacity:.95;transform:translate(-50%,-50%) scale(.25)}65%{opacity:.52}100%{opacity:0;transform:translate(-50%,-50%) scale(3.9)}}
-@media(prefers-reduced-motion:reduce){.pointer-ripple{animation:none;opacity:0}.spinner{animation:none}}
+@media(prefers-reduced-motion:reduce){.spinner{animation:none}}
 @media(max-width:1050px){.research-layout{grid-template-columns:195px minmax(0,1fr);gap:22px}}
 @media(max-width:760px){.site-header{gap:12px}.research-layout{display:block}.filter-panel{margin-bottom:18px}}
 
@@ -106,3 +106,84 @@
 /* Keep checkbox filters horizontally aligned with their labels. */
 .filter-group.checks > .check-line{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;gap:8px}
 .filter-group.checks > .check-line > input[type=checkbox]{flex:0 0 auto}
+
+
+/* Logo-only search landing: no duplicate wordmark, tagline, menus, or result chrome. */
+#landing-shell{display:none}
+body.landing-active{min-height:100vh;overflow-x:hidden}
+body.landing-active #site-header,
+body.landing-active #primary-nav,
+body.landing-active #page-shell{display:none!important}
+body.landing-active #landing-shell{display:flex!important}
+.landing-shell{min-height:100svh;width:100%;padding:28px 20px 12vh;flex-direction:column;align-items:center;justify-content:center;gap:25px;background:#fff}
+.landing-logo-link{display:flex;align-items:center;justify-content:center;width:146px;height:132px;color:inherit}
+.landing-logo-link:hover{text-decoration:none}
+.landing-logo{display:block;width:146px;height:auto;max-height:132px;object-fit:contain}
+.landing-search-form{width:min(640px,100%)}
+.landing-search-box{width:100%;height:54px;display:flex;align-items:center;gap:12px;padding:0 7px 0 17px;border:1px solid #c7cdd4;border-radius:28px;background:#fff;box-shadow:0 2px 7px #172b3c12;transition:border-color .16s,box-shadow .16s}
+.landing-search-box:hover{box-shadow:0 3px 11px #172b3c20}
+.landing-search-box:focus-within{border-color:#5c8fbe;box-shadow:0 0 0 3px #dceaf6,0 3px 10px #172b3c10}
+.landing-search-box>.ui-icon{width:19px;height:19px;flex-basis:19px;color:#718090}
+.landing-search-box input{flex:1;min-width:0;height:100%;border:0;outline:0;background:transparent;color:#202124;font-size:16px}
+.landing-search-box input::placeholder{color:#7c8791;opacity:1}
+.landing-submit{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:#205f9b;color:#fff;transition:background .15s,transform .15s}
+.landing-submit:hover{background:#164a7d;transform:scale(1.04)}
+.landing-submit .ui-icon{width:18px;height:18px;flex-basis:18px}
+.landing-modes{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap}
+.landing-mode{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:116px;padding:10px 17px;border:1px solid #d8dee5;border-radius:22px;background:#fff;color:#435261;font-size:14px;transition:background .15s,border-color .15s,color .15s,box-shadow .15s}
+.landing-mode .ui-icon{width:16px;height:16px;flex-basis:16px}
+.landing-mode:hover{background:#f5f8fb;border-color:#a9bfd3}
+.landing-mode.is-selected{background:#eaf3fc;color:#174f89;border-color:#77a8d4;box-shadow:inset 0 0 0 1px #cfe2f5;font-weight:600}
+.landing-mode[data-landing-mode="cases"].is-selected{background:#f1edfc;color:#59409a;border-color:#b9a9e7;box-shadow:inset 0 0 0 1px #e4ddf8}
+.landing-mode[data-landing-mode="patents"].is-selected{background:#fff3df;color:#89571b;border-color:#e7bf7a;box-shadow:inset 0 0 0 1px #fae3bc}
+@media(max-width:520px){.landing-shell{padding:22px 16px 15vh;gap:22px}.landing-logo-link{width:118px;height:108px}.landing-logo{width:118px;max-height:108px}.landing-search-box{height:50px;padding-left:14px}.landing-search-box input{font-size:14px}.landing-mode{min-width:0;padding:9px 13px;font-size:13px}}
+
+/* Readable, consistent result color language. Color always indicates metadata type, not truth. */
+.result-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:12px;line-height:1.55}
+.meta-source{color:#6b42a1;font-weight:600}
+.meta-year{color:#a45b0a;font-weight:700}
+.meta-type{color:#08767b;background:#e8f7f7;border:1px solid #c4ebeb;border-radius:4px;padding:1px 6px;font-size:10.5px;font-weight:700;white-space:nowrap}
+.meta-separator{color:#a0a8b0;font-weight:400}
+.result-title{font-size:19px;font-weight:500;line-height:1.38;margin-bottom:6px}
+.result-title a{color:#135ba1;text-decoration:none}
+.result-title a:hover{text-decoration:underline;color:#0c4783}
+.result-title a:visited{color:#6d3d9e}
+.result-authors{font-size:13px;color:#187044;line-height:1.55}
+.result-authors button{color:#187044;font-weight:500;text-decoration:none}
+.result-authors button:hover{color:#10552f;text-decoration:underline}
+.result-snippet{font-size:13.5px;line-height:1.65;color:#303b45;margin-top:5px}
+.result-badge{font-size:11px;border-radius:12px;padding:3px 8px;border-color:#d9e1e8;background:#f5f7fa;color:#506070}
+.result-badge.oa{color:#17683c;background:#e7f7ed;border-color:#b7e5c6;font-weight:600}
+.result-badge.preprint{color:#8b570e;background:#fff3dd;border-color:#f0d29b;font-weight:600}
+.result-badge:has(.ui-icon[href="#icon-link"]),.result-badge.doi-badge{color:#6c40a1;background:#f3edfc;border-color:#d8c9f3}
+.result-badge .ui-icon{width:13px;height:13px;flex-basis:13px}
+.result-actions{gap:7px 15px;margin-top:10px}
+.result-action{display:inline-flex;align-items:center;gap:5px;color:#255f94;font-size:12px;font-weight:500}
+.result-action.primary{color:#155da3}
+.result-action.saved{color:#187044}
+.result-action.citation-count{color:#a45b0a;font-weight:600}
+.result-action.passive{cursor:help}
+.result-action.result-abstract-toggle{color:#08767b}
+.source-signal{font-size:11px;border:1px solid #e1e6eb;border-radius:12px;padding:3px 7px;background:#f8fafb;color:#586675;gap:6px}
+.signal-bar{width:48px;height:5px;background:#e3e8ed}
+.signal-journal .signal-bar span,.signal-repository .signal-bar span{background:#278456}
+.signal-institution .signal-bar span{background:#2175ad}
+.signal-conference .signal-bar span{background:#a45b0a}
+.signal-preprint .signal-bar span{background:#bf7e1e}
+.signal-other .signal-bar span{background:#6b42a1}
+.signal-unknown .signal-bar span{background:#7c8792}
+.article-result{padding:19px 0 18px}
+.footer-help-links{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.footer-help-links .text-button{justify-content:flex-end;text-align:right}
+@media(max-width:760px){.footer-help-links{align-items:flex-start}.footer-help-links .text-button{justify-content:flex-start;text-align:left}}
+
+/* Ripple remains visible even when the operating system requests reduced motion. */
+.pointer-ripple{position:fixed;z-index:99999;width:24px;height:24px;left:0;top:0;border:2px solid rgba(42,112,178,.78);border-radius:50%;background:rgba(70,145,211,.2);box-shadow:0 0 0 4px rgba(70,145,211,.09),0 0 14px rgba(36,103,168,.17);pointer-events:none;transform:translate(-50%,-50%) scale(.22);animation:acadia-ripple .62s cubic-bezier(.15,.65,.25,1) both}
+.pointer-ripple::after{content:"";position:absolute;inset:-6px;border:1px solid rgba(70,145,211,.38);border-radius:50%;animation:acadia-ripple-ring .62s cubic-bezier(.15,.65,.25,1) both}
+@keyframes acadia-ripple{0%{opacity:.95;transform:translate(-50%,-50%) scale(.22)}65%{opacity:.55}100%{opacity:0;transform:translate(-50%,-50%) scale(3.4)}}
+@keyframes acadia-ripple-ring{0%{opacity:.7;transform:scale(.4)}100%{opacity:0;transform:scale(1.12)}}
+@media(prefers-reduced-motion:reduce){.pointer-ripple,.pointer-ripple::after{animation-duration:.28s}.landing-search-box,.landing-submit,.landing-mode{transition:none}}
+
+/* Keep the help links readable in the result-page footer without colliding with source notes. */
+.footer-help-links{min-width:190px;max-width:240px;align-items:flex-start}
+.site-footer .footer-help-links .text-button{white-space:normal;line-height:1.4;text-align:left;justify-content:flex-start}

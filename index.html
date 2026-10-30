@@ -45,7 +45,7 @@
     <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   </svg>
 
-  <header class="site-header">
+  <header id="site-header" class="site-header">
     <a class="brand" href="/" aria-label="Acadia scholarly search">
       <img src="/assets/logo.png" alt="" width="42" height="42">
       <span class="brand-copy"><strong>Acadia</strong><small>trust the web here.</small></span>
@@ -59,10 +59,30 @@
     </form>
     <button id="advanced-toggle" class="header-link" type="button" title="Show advanced search fields" aria-expanded="false" aria-controls="advanced-panel"><svg class="ui-icon" aria-hidden="true"><use href="#icon-sliders"></use></svg><span>Advanced</span></button>
     <button id="research-guide" class="header-link" type="button" title="Learn what search options, indicators, and research terms mean"><svg class="ui-icon" aria-hidden="true"><use href="#icon-circle-help"></use></svg><span>Guide</span></button>
+    <a class="header-link information-shortcut" href="/information/" title="Open the color key and plain-language research glossary"><svg class="ui-icon" aria-hidden="true"><use href="#icon-info"></use></svg><span>Color key</span></a>
     <button id="alerts-shortcut" class="header-link" type="button" title="Research alerts"><svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg><span>Alerts</span></button>
   </header>
 
-  <nav class="primary-nav" aria-label="Research tools">
+  <main id="landing-shell" class="landing-shell" aria-label="Search Acadia">
+    <a class="landing-logo-link" href="/" aria-label="Acadia home">
+      <img class="landing-logo" src="/assets/logo.png" alt="Acadia research logo" width="150" height="129">
+    </a>
+    <form id="landing-search-form" class="landing-search-form" role="search">
+      <label class="sr-only" for="landing-query">Search scholarly articles, case law, or patents</label>
+      <div class="landing-search-box">
+        <svg class="ui-icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+        <input id="landing-query" name="q" type="search" placeholder="Search articles, a topic, DOI, or keywords" maxlength="400" autocomplete="off" spellcheck="false">
+        <button class="landing-submit" type="submit" aria-label="Search"><svg class="ui-icon" aria-hidden="true"><use href="#icon-search"></use></svg><span class="sr-only">Search</span></button>
+      </div>
+    </form>
+    <div class="landing-modes" role="radiogroup" aria-label="Choose what to search">
+      <button class="landing-mode is-selected" type="button" role="radio" aria-checked="true" data-landing-mode="articles"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book-open"></use></svg><span>Articles</span></button>
+      <button class="landing-mode" type="button" role="radio" aria-checked="false" data-landing-mode="cases"><svg class="ui-icon" aria-hidden="true"><use href="#icon-building"></use></svg><span>Case law</span></button>
+      <button class="landing-mode" type="button" role="radio" aria-checked="false" data-landing-mode="patents"><svg class="ui-icon" aria-hidden="true"><use href="#icon-file-pen"></use></svg><span>Patents</span></button>
+    </div>
+  </main>
+
+  <nav id="primary-nav" class="primary-nav" aria-label="Research tools">
     <div class="nav-inner" id="view-nav">
       <button class="nav-item active" data-view="articles" type="button">Articles</button>
       <button class="nav-item" data-view="authors" type="button">Authors</button>
@@ -79,7 +99,7 @@
     </div>
   </nav>
 
-  <main class="page-shell">
+  <main id="page-shell" class="page-shell">
     <section class="intro-row" id="intro-row">
       <div>
         <div class="eyebrow">RESEARCH TOOLS</div>
@@ -150,7 +170,7 @@
     <footer class="site-footer">
       <div><strong>Acadia</strong> <span>Scholarly discovery, without the guesswork.</span></div>
       <p>Metadata from OpenAlex, Crossref, and Semantic Scholar. Source indicators describe metadata signals, not the validity of an individual claim.</p>
-      <button id="about-data" class="text-button" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-info"></use></svg> How sources and citation counts work</button>
+      <div class="footer-help-links"><a class="text-button" href="/information/">Color key &amp; glossary</a><button id="about-data" class="text-button" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-info"></use></svg> How sources and citation counts work</button></div>
     </footer>
   </main>
 
