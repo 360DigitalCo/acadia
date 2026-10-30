@@ -140,7 +140,7 @@
   }
   function updateIntro() {
     const descriptions = {
-      articles: ['Find the work behind the idea.', 'Search across scholarly indexes, inspect citation trails, and keep the papers that matter.'],
+      articles: ['acadia', 'trust the web here.'],
       authors: ['Find researchers and follow their work.', 'Explore author output, citation counts, h-index metadata, and institutional affiliations.'],
       journals: ['Explore journals and research sources.', 'Compare indexed publication volume, citations, and source-level metrics.'],
       institutions: ['Discover research institutions.', 'Explore indexed output, citation counts, locations, and institutional records.'],
@@ -166,7 +166,7 @@
   }
   function emptyState() {
     $('results-toolbar').hidden = true; $('pagination').hidden = true;
-    $('results').innerHTML = `<section class="empty-panel"><div class="eyebrow">ACADIA RESEARCH</div><h2>Research starts with a good question.</h2><p>Search article titles, topics, DOIs, or author names. Results combine several scholarly metadata indexes; full text depends on the publisher or repository.</p><div class="quick-searches"><button type="button" data-quick-query="retrieval augmented generation">Retrieval augmented generation</button><button type="button" data-quick-query="climate adaptation urban heat">Urban heat adaptation</button><button type="button" data-quick-query="CRISPR gene editing review">CRISPR gene editing</button><button type="button" data-quick-query="transformer language models">Transformer language models</button></div></section>`;
+    $('results').innerHTML = `<section class="empty-panel"><h2>Search scholarly literature</h2><p>Find articles, authors, topics, and citation trails across academic indexes.</p><div class="quick-searches"><button type="button" data-quick-query="retrieval augmented generation">retrieval augmented generation</button><button type="button" data-quick-query="climate adaptation urban heat">climate adaptation urban heat</button><button type="button" data-quick-query="CRISPR gene editing review">CRISPR gene editing review</button><button type="button" data-quick-query="transformer language models">transformer language models</button></div></section>`;
   }
   function apiNotice(message, fallbackQuery) {
     const q = encodeURIComponent(fallbackQuery || state.query || '');
@@ -1036,6 +1036,25 @@
     const view = params.get('view') || 'articles';
     if (q !== state.query || view !== state.view) { state.query = q; $('query').value = q; state.view = view; updateIntro(); runCurrentSearch(1); }
   });
+
+  // Small pointer ripples restore Acadia's lightweight click feedback without
+  // changing element layout or intercepting normal controls.
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0 || event.isPrimary === false) return;
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (!target.closest('button, a, input, select, textarea, summary, [role="button"], .nav-item, .article-result, .author-result, .entity-result')) return;
+      const ripple = document.createElement('span');
+      ripple.className = 'pointer-ripple';
+      ripple.setAttribute('aria-hidden', 'true');
+      ripple.style.left = `${event.clientX}px`;
+      ripple.style.top = `${event.clientY}px`;
+      document.body.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+      window.setTimeout(() => ripple.remove(), 800);
+    }, { passive: true });
+  }
 
   // Restore supported UI state from URL/local storage; do not make background requests.
   populateRecentSearches();
