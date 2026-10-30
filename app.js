@@ -17,7 +17,7 @@
     view: 'articles', query: '', page: 1, searchToken: 0, busy: false,
     results: [], allCount: null, canNext: false, activeAdvanced: false,
     advanced: { phrase: '', author: '', publication: '', exclude: '', field: 'all', type: '' },
-    filters: { from: '', to: '', sort: 'relevance', type: '', minCitations: 0, openAccess: false, withAbstract: false },
+    filters: { from: '', to: '', sort: 'relevance', type: '', minCitations: 0, openAccess: false, withAbstract: false, domains: '' },
     library: readStore(STORAGE.library, []), history: readStore(STORAGE.history, []),
     alerts: readStore(STORAGE.alerts, []), settings: readStore(STORAGE.settings, {}),
     selected: new Set(), works: new Map(), entities: new Map(), citationWorks: [], previousFocus: null
@@ -40,6 +40,9 @@
   }
   function plainText(value) {
     return String(value == null ? '' : value).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&#39;|&apos;/gi, "'").replace(/&quot;/gi, '"').replace(/\s+/g, ' ').trim();
+  }
+  function svgIcon(name) {
+    return `<svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-${name}"></use></svg>`;
   }
   function normalizeDOI(value) {
     return String(value || '').trim().replace(/^https?:\/\/(dx\.)?doi\.org\//i, '').replace(/^doi:\s*/i, '').toLowerCase();
@@ -140,7 +143,7 @@
   }
   function updateIntro() {
     const descriptions = {
-      articles: ['acadia', 'trust the web here.'],
+      articles: ['', ''],
       authors: ['Find researchers and follow their work.', 'Explore author output, citation counts, h-index metadata, and institutional affiliations.'],
       journals: ['Explore journals and research sources.', 'Compare indexed publication volume, citations, and source-level metrics.'],
       institutions: ['Discover research institutions.', 'Explore indexed output, citation counts, locations, and institutional records.'],
@@ -154,8 +157,11 @@
     const pair = descriptions[state.view] || descriptions.articles;
     $('page-title').textContent = pair[0]; $('page-description').textContent = pair[1];
     const noFilters = ['authors', 'journals', 'institutions', 'library', 'alerts', 'history', 'metrics', 'patents', 'cases'].includes(state.view);
-    $('filter-panel').hidden = noFilters;
-    $('content-column').style.gridColumn = noFilters ? '1 / -1' : 'auto';
+    const articleIdle = state.view === 'articles' && !state.query.trim();
+    $('intro-row').hidden = state.view === 'articles';
+    if (state.view !== 'articles' && state.activeAdvanced) { state.activeAdvanced = false; $('advanced-panel').hidden = true; $('advanced-toggle').setAttribute('aria-expanded', 'false'); }
+    $('filter-panel').hidden = noFilters || articleIdle;
+    $('content-column').style.gridColumn = noFilters || articleIdle ? '1 / -1' : 'auto';
     $('advanced-toggle').hidden = state.view !== 'articles';
     $('create-alert').hidden = !['articles', 'authors'].includes(state.view) || !state.query;
     setActiveNav();
@@ -166,7 +172,7 @@
   }
   function emptyState() {
     $('results-toolbar').hidden = true; $('pagination').hidden = true;
-    $('results').innerHTML = `<section class="empty-panel"><h2>Search scholarly literature</h2><p>Find articles, authors, topics, and citation trails across academic indexes.</p><div class="quick-searches"><button type="button" data-quick-query="retrieval augmented generation">retrieval augmented generation</button><button type="button" data-quick-query="climate adaptation urban heat">climate adaptation urban heat</button><button type="button" data-quick-query="CRISPR gene editing review">CRISPR gene editing review</button><button type="button" data-quick-query="transformer language models">transformer language models</button></div></section>`;
+    $('results').innerHTML = `<section class="search-start"><p>Search scholarly articles, authors, topics, or a DOI.</p><div class="search-examples"><span>Examples:</span><button type="button" data-quick-query="retrieval augmented generation">retrieval augmented generation</button><button type="button" data-quick-query="climate adaptation urban heat">climate adaptation urban heat</button><button type="button" data-quick-query="CRISPR gene editing review">CRISPR gene editing review</button><button type="button" data-quick-query="transformer language models">transformer language models</button></div><p class="search-start-note">Press <kbd>/</kbd> to focus search. Open <button type="button" class="guide-inline" id="open-guide-inline">the research guide</button> to learn what each indicator means.</p></section>`;
   }
   function apiNotice(message, fallbackQuery) {
     const q = encodeURIComponent(fallbackQuery || state.query || '');
@@ -444,10 +450,10 @@
     const abstractId = `abstract-${simpleHash(work.key)}`;
     const meta = [work.source || work.publisher || host, formatYear(work.year), prettyType(work.type)].filter(Boolean).join(' · ');
     const badges = [
-      work.openAccess ? '<span class="result-badge oa">Open access</span>' : '',
-      /preprint/i.test(work.type) ? '<span class="result-badge preprint">Preprint</span>' : '',
-      work.doi ? `<span class="result-badge">DOI: ${escapeHTML(work.doi)}</span>` : '',
-      work.sourceApis && work.sourceApis.length > 1 ? `<span class="result-badge">Combined metadata · ${escapeHTML(work.sourceApis.join(' + '))}</span>` : ''
+      work.openAccess ? `<span class="result-badge oa" title="Open access means at least one indexed copy is reported as freely readable without a subscription.">${svgIcon('unlock')}<span>Open access</span></span>` : '',
+      /preprint/i.test(work.type) ? `<span class="result-badge preprint" title="A preprint is a manuscript shared before or outside the final published journal version.">${svgIcon('file-pen')}<span>Preprint</span></span>` : '',
+      work.doi ? `<span class="result-badge" title="A DOI is a persistent digital identifier for a scholarly work.">${svgIcon('link')}<span>DOI: ${escapeHTML(work.doi)}</span></span>` : '',
+      work.sourceApis && work.sourceApis.length > 1 ? `<span class="result-badge" title="This record combines metadata from more than one index.">${svgIcon('database')}<span>Combined metadata · ${escapeHTML(work.sourceApis.join(' + '))}</span></span>` : ''
     ].filter(Boolean).join('');
     const snippet = abstract ? escapeHTML(abstract.length > 460 ? `${abstract.slice(0, 457).trim()}…` : abstract) : `${work.source ? `Published in ${escapeHTML(work.source)}. ` : ''}${work.citations ? `Cited by ${formatNumber(work.citations)} works. ` : ''}Abstract not available in the indexed metadata.`;
     return `<article class="article-result" data-result-key="${escapeHTML(work.key)}">
@@ -456,15 +462,15 @@
       <p class="result-authors">${authorButtons(work)}</p>
       <p class="result-snippet" id="${abstractId}">${snippet}</p>
       ${badges ? `<div class="result-badges">${badges}</div>` : ''}
-      <div class="result-actions">
-        <button type="button" class="result-action primary" data-action="work-details" data-work="${escapeHTML(work.key)}">Details</button>
-        <button type="button" class="result-action ${saved ? 'saved' : ''}" data-action="save-work" data-work="${escapeHTML(work.key)}">${saved ? '✓ Saved' : 'Save'}</button>
-        <button type="button" class="result-action" data-action="cite-work" data-work="${escapeHTML(work.key)}">Cite</button>
-        <button type="button" class="result-action result-abstract-toggle" data-action="toggle-abstract" data-work="${escapeHTML(work.key)}" data-target="${abstractId}" aria-expanded="false">${abstract ? 'Show abstract' : 'Metadata'}</button>
-        ${work.openAlexId ? `<button type="button" class="result-action" data-action="cited-by" data-work="${escapeHTML(work.key)}">Cited by ${formatNumber(work.citations)}</button>` : work.citations ? `<span class="result-action">Cited by ${formatNumber(work.citations)}</span>` : ''}
-        ${work.openAlexId && work.related && work.related.length ? `<button type="button" class="result-action" data-action="related" data-work="${escapeHTML(work.key)}">Related articles</button>` : ''}
-        ${work.locations && work.locations.length > 1 ? `<button type="button" class="result-action" data-action="versions" data-work="${escapeHTML(work.key)}">All versions (${work.locations.length})</button>` : ''}
-        ${work.pdfUrl ? `<a class="result-action" href="${escapeHTML(work.pdfUrl)}" target="_blank" rel="noopener noreferrer">PDF ↗</a>` : work.oaUrl ? `<a class="result-action" href="${escapeHTML(work.oaUrl)}" target="_blank" rel="noopener noreferrer">Open access ↗</a>` : ''}
+      <div class="result-actions" aria-label="Research paper actions">
+        <button type="button" class="result-action primary" data-action="work-details" data-work="${escapeHTML(work.key)}" title="Open the full indexed record and its identifiers">${svgIcon('file-text')}<span>Details</span></button>
+        <button type="button" class="result-action ${saved ? 'saved' : ''}" data-action="save-work" data-work="${escapeHTML(work.key)}" title="Save this paper to your browser's local library">${saved ? `${svgIcon('bookmark-check')}<span>Saved</span>` : `${svgIcon('bookmark')}<span>Save</span>`}</button>
+        <button type="button" class="result-action" data-action="cite-work" data-work="${escapeHTML(work.key)}" title="Create a formatted citation or export a reference file">${svgIcon('quote')}<span>Cite</span></button>
+        <button type="button" class="result-action result-abstract-toggle" data-action="toggle-abstract" data-work="${escapeHTML(work.key)}" data-target="${abstractId}" aria-expanded="false" title="Expand or collapse the abstract text">${svgIcon('align-left')}<span>${abstract ? 'Show abstract' : 'Metadata'}</span></button>
+        ${work.openAlexId ? `<button type="button" class="result-action" data-action="cited-by" data-work="${escapeHTML(work.key)}" title="Open indexed papers that cite this work">${svgIcon('quote')}<span>Cited by ${formatNumber(work.citations)}</span></button>` : work.citations ? `<span class="result-action passive" title="Citation count supplied by the index; it may differ from other databases.">${svgIcon('quote')}<span>Cited by ${formatNumber(work.citations)}</span></span>` : ''}
+        ${work.openAlexId && work.related && work.related.length ? `<button type="button" class="result-action" data-action="related" data-work="${escapeHTML(work.key)}" title="Open papers the index considers related; this is not a quality rating">${svgIcon('network')}<span>Related articles</span></button>` : ''}
+        ${work.locations && work.locations.length > 1 ? `<button type="button" class="result-action" data-action="versions" data-work="${escapeHTML(work.key)}" title="Show alternate publisher or repository copies">${svgIcon('layers')}<span>All versions (${work.locations.length})</span></button>` : ''}
+        ${work.pdfUrl ? `<a class="result-action" href="${escapeHTML(work.pdfUrl)}" target="_blank" rel="noopener noreferrer" title="Open the indexed PDF copy">${svgIcon('file-down')}<span>PDF</span>${svgIcon('external-link')}</a>` : work.oaUrl ? `<a class="result-action" href="${escapeHTML(work.oaUrl)}" target="_blank" rel="noopener noreferrer" title="Open the available open-access copy">${svgIcon('unlock')}<span>Open access</span>${svgIcon('external-link')}</a>` : ''}
       </div>
     </article>`;
   }
@@ -472,7 +478,32 @@
     let hash = 0; for (let i = 0; i < String(text).length; i++) hash = ((hash << 5) - hash + String(text).charCodeAt(i)) | 0;
     return `x${Math.abs(hash)}`;
   }
+  function requestedDomains() {
+    return String(state.filters.domains || '').split(/[;,\n]+/).map((entry) => {
+      const raw = entry.trim();
+      if (!raw) return '';
+      const candidate = raw.replace(/^\*\./, '').replace(/^\./, '');
+      try {
+        const url = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(candidate) ? candidate : `https://${candidate}`);
+        return url.hostname.toLowerCase().replace(/^www\./, '').replace(/\.$/, '');
+      } catch (_) { return ''; }
+    }).filter(Boolean);
+  }
+  function workMatchesDomains(work, domains) {
+    if (!domains.length) return true;
+    const urls = [work.oaUrl, work.pdfUrl, work.url, ...(work.locations || []).flatMap((location) => [location.url, location.pdf])];
+    const hosts = urls.map((value) => {
+      const url = safeUrl(value);
+      if (!url) return '';
+      try {
+        const host = new URL(url).hostname.toLowerCase().replace(/^www\./, '');
+        return /(^|\.)(doi\.org|openalex\.org|semanticscholar\.org|crossref\.org)$/.test(host) ? '' : host;
+      } catch (_) { return ''; }
+    }).filter(Boolean);
+    return hosts.some((host) => domains.some((domain) => host === domain || host.endsWith(`.${domain}`)));
+  }
   function filterLocalWorks(works) {
+    const domains = requestedDomains();
     const from = Number(state.filters.from || 0), to = Number(state.filters.to || 0);
     const type = state.advanced.type || state.filters.type;
     const exclude = state.advanced.exclude.split(',').map((term) => term.trim().toLowerCase()).filter(Boolean);
@@ -496,6 +527,7 @@
       }
       if (state.advanced.author && !work.authorNames.some((name) => containsAllWords(name, state.advanced.author))) return false;
       if (state.advanced.publication && !containsAllWords(work.source, state.advanced.publication)) return false;
+      if (!workMatchesDomains(work, domains)) return false;
       return true;
     });
   }
@@ -587,13 +619,14 @@
     state.filters.sort = $('sort-mode').value; state.filters.type = $('type-filter').value;
     state.filters.minCitations = Number($('min-citations').value || 0); state.filters.openAccess = $('open-access').checked;
     state.filters.withAbstract = $('with-abstract').checked;
+    state.filters.domains = $('domain-filter').value.trim();
     state.advanced.type = $('advanced-type').value || '';
   }
   function loadFilters() {
     $('year-from').value = state.filters.from; $('year-to').value = state.filters.to;
     $('sort-mode').value = state.filters.sort; $('type-filter').value = state.filters.type;
     $('min-citations').value = String(state.filters.minCitations || 0); $('open-access').checked = state.filters.openAccess;
-    $('with-abstract').checked = state.filters.withAbstract; $('advanced-type').value = state.advanced.type || '';
+    $('with-abstract').checked = state.filters.withAbstract; $('domain-filter').value = state.filters.domains || ''; $('advanced-type').value = state.advanced.type || '';
   }
   async function runCurrentSearch(page = 1) {
     if (state.view === 'articles') return runArticleSearch(page);
@@ -688,7 +721,7 @@
     const isSaved = state.library.some((item) => item.key === work.key);
     const content = `<div class="detail-meta">${escapeHTML([work.source, formatYear(work.year), prettyType(work.type)].filter(Boolean).join(' · '))}</div>
       <p>${escapeHTML(authors)}</p><div class="metric-row"><span><strong>${formatNumber(work.citations)}</strong> citations</span><span><strong>${work.openAccess || work.oaUrl || work.pdfUrl ? 'Yes' : 'Unknown'}</strong> open access</span><span><strong>${escapeHTML(signal.score)}/100</strong> source context</span><span><strong>${escapeHTML((work.sourceApis || []).join(', '))}</strong> metadata</span></div>
-      <div class="modal-actions"><button type="button" data-action="save-work" data-work="${escapeHTML(work.key)}">${isSaved ? 'Saved in library ✓' : 'Save to library'}</button><button type="button" data-action="cite-work" data-work="${escapeHTML(work.key)}">Cite / export</button>${work.openAlexId ? `<button type="button" data-action="cited-by" data-work="${escapeHTML(work.key)}">View citing works</button>` : ''}${work.openAlexId && work.references && work.references.length ? `<button type="button" data-action="references" data-work="${escapeHTML(work.key)}">References (${work.references.length})</button>` : ''}${work.openAlexId && work.related && work.related.length ? `<button type="button" data-action="related" data-work="${escapeHTML(work.key)}">Related works</button>` : ''}</div>
+      <div class="modal-actions"><button type="button" data-action="save-work" data-work="${escapeHTML(work.key)}">${isSaved ? `${svgIcon('bookmark-check')}<span>Saved in library</span>` : `${svgIcon('bookmark')}<span>Save to library</span>`}</button><button type="button" data-action="cite-work" data-work="${escapeHTML(work.key)}">${svgIcon('quote')}<span>Cite / export</span></button>${work.openAlexId ? `<button type="button" data-action="cited-by" data-work="${escapeHTML(work.key)}">${svgIcon('quote')}<span>View citing works</span></button>` : ''}${work.openAlexId && work.references && work.references.length ? `<button type="button" data-action="references" data-work="${escapeHTML(work.key)}">${svgIcon('book-open')}<span>References (${work.references.length})</span></button>` : ''}${work.openAlexId && work.related && work.related.length ? `<button type="button" data-action="related" data-work="${escapeHTML(work.key)}">${svgIcon('network')}<span>Related works</span></button>` : ''}</div>
       <h3>Abstract</h3><p class="abstract-full">${formatAbstract(work)}</p>
       <h3>Identifiers & access</h3><p>${doiLink ? `DOI: ${doiLink}` : 'DOI not available'}${work.openAccess ? ' · Open-access metadata is available' : ''}</p>${work.pdfUrl ? `<p><a href="${escapeHTML(work.pdfUrl)}" target="_blank" rel="noopener noreferrer">Open PDF ↗</a></p>` : ''}${work.oaUrl ? `<p><a href="${escapeHTML(work.oaUrl)}" target="_blank" rel="noopener noreferrer">Open-access full text ↗</a></p>` : ''}${work.url ? `<p><a href="${escapeHTML(work.url)}" target="_blank" rel="noopener noreferrer">Open publisher / source record ↗</a></p>` : ''}
       ${locations ? `<h3>Versions and repository copies</h3><ul>${locations}</ul>` : ''}
@@ -766,7 +799,7 @@
       } else if (kind === 'references') works = await batchOpenAlexWorks(work.references || []);
       else works = await batchOpenAlexWorks(work.related || []);
       registerWorks(works);
-      $('modal-content').innerHTML = works.length ? `<p class="helper-text">${kind === 'cited-by' ? 'These records cite this work according to OpenAlex. Citation links are not complete for every source.' : kind === 'references' ? 'Reference records depend on the coverage and linked identifiers available in OpenAlex.' : 'Relatedness is computed by the index and is not a peer-review or quality assessment.'}</p><ul class="related-list">${works.map((item) => `<li><h4><button type="button" data-action="work-details" data-work="${escapeHTML(item.key)}">${escapeHTML(item.title)}</button></h4><p>${escapeHTML([item.authorNames.slice(0, 4).join(', '), item.year || 'Year unknown', item.source].filter(Boolean).join(' · '))} · ${formatNumber(item.citations)} citations</p><div class="result-actions"><button class="result-action" type="button" data-action="save-work" data-work="${escapeHTML(item.key)}">Save</button><button class="result-action" type="button" data-action="cite-work" data-work="${escapeHTML(item.key)}">Cite</button>${item.url ? `<a class="result-action" href="${escapeHTML(item.url)}" target="_blank" rel="noopener noreferrer">Open record ↗</a>` : ''}</div></li>`).join('')}</ul>` : `<div class="no-results"><p>No linked records were returned for this work. This can mean that the index has incomplete citation data, not that the work has no references or citations.</p></div>`;
+      $('modal-content').innerHTML = works.length ? `<p class="helper-text">${kind === 'cited-by' ? 'These records cite this work according to OpenAlex. Citation links are not complete for every source.' : kind === 'references' ? 'Reference records depend on the coverage and linked identifiers available in OpenAlex.' : 'Relatedness is computed by the index and is not a peer-review or quality assessment.'}</p><ul class="related-list">${works.map((item) => `<li><h4><button type="button" data-action="work-details" data-work="${escapeHTML(item.key)}">${escapeHTML(item.title)}</button></h4><p>${escapeHTML([item.authorNames.slice(0, 4).join(', '), item.year || 'Year unknown', item.source].filter(Boolean).join(' · '))} · ${formatNumber(item.citations)} citations</p><div class="result-actions"><button class="result-action" type="button" data-action="save-work" data-work="${escapeHTML(item.key)}">${svgIcon('bookmark')}<span>Save</span></button><button class="result-action" type="button" data-action="cite-work" data-work="${escapeHTML(item.key)}">${svgIcon('quote')}<span>Cite</span></button>${item.url ? `<a class="result-action" href="${escapeHTML(item.url)}" target="_blank" rel="noopener noreferrer">${svgIcon('external-link')}<span>Open record</span></a>` : ''}</div></li>`).join('')}</ul>` : `<div class="no-results"><p>No linked records were returned for this work. This can mean that the index has incomplete citation data, not that the work has no references or citations.</p></div>`;
     } catch (_) {
       $('modal-content').innerHTML = `<div class="inline-error">The citation graph could not be loaded. The selected index may be rate-limited or this record may not have linked works.</div>`;
     }
@@ -831,7 +864,7 @@
   }
   function updateSaveButtons(key, saved) {
     document.querySelectorAll(`[data-action="save-work"][data-work="${cssEscape(key)}"]`).forEach((button) => {
-      button.textContent = saved ? '✓ Saved' : 'Save'; button.classList.toggle('saved', saved);
+      button.innerHTML = saved ? `${svgIcon('bookmark-check')}<span>Saved</span>` : `${svgIcon('bookmark')}<span>Save</span>`; button.classList.toggle('saved', saved);
     });
   }
   function cssEscape(value) {
@@ -851,7 +884,7 @@
       return;
     }
     state.library.forEach((work) => state.works.set(work.key, work));
-    $('results').innerHTML = `<div class="toolbar-actions" style="margin:12px 0 4px"><button class="plain-button compact" type="button" data-action="export-library" data-format="bibtex">Export all BibTeX</button><button class="plain-button compact" type="button" data-action="export-library" data-format="ris">Export all RIS</button></div>` + state.library.map((work) => `<article class="saved-result"><h2 class="result-title"><button class="history-query" type="button" data-action="work-details" data-work="${escapeHTML(work.key)}">${escapeHTML(work.title)}</button></h2><p class="result-authors">${escapeHTML((work.authorNames || []).join(', '))}${work.year ? ` · ${escapeHTML(work.year)}` : ''}${work.source ? ` · ${escapeHTML(work.source)}` : ''}</p><div class="metric-row"><span><strong>${formatNumber(work.citations)}</strong> citations</span><span>${work.openAccess || work.oaUrl || work.pdfUrl ? 'Open-access link recorded' : 'No open-access link recorded'}</span><span class="subtle">Saved ${new Date(work.savedAt || Date.now()).toLocaleDateString()}</span></div><div class="result-actions"><button type="button" class="result-action" data-action="work-details" data-work="${escapeHTML(work.key)}">Details</button><button type="button" class="result-action" data-action="cite-work" data-work="${escapeHTML(work.key)}">Cite / export</button><button type="button" class="result-action" data-action="remove-saved" data-work="${escapeHTML(work.key)}">Remove</button>${work.url ? `<a class="result-action" href="${escapeHTML(work.url)}" target="_blank" rel="noopener noreferrer">Open source ↗</a>` : ''}</div></article>`).join('');
+    $('results').innerHTML = `<div class="toolbar-actions" style="margin:12px 0 4px"><button class="plain-button compact" type="button" data-action="export-library" data-format="bibtex">Export all BibTeX</button><button class="plain-button compact" type="button" data-action="export-library" data-format="ris">Export all RIS</button></div>` + state.library.map((work) => `<article class="saved-result"><h2 class="result-title"><button class="history-query" type="button" data-action="work-details" data-work="${escapeHTML(work.key)}">${escapeHTML(work.title)}</button></h2><p class="result-authors">${escapeHTML((work.authorNames || []).join(', '))}${work.year ? ` · ${escapeHTML(work.year)}` : ''}${work.source ? ` · ${escapeHTML(work.source)}` : ''}</p><div class="metric-row"><span><strong>${formatNumber(work.citations)}</strong> citations</span><span>${work.openAccess || work.oaUrl || work.pdfUrl ? 'Open-access link recorded' : 'No open-access link recorded'}</span><span class="subtle">Saved ${new Date(work.savedAt || Date.now()).toLocaleDateString()}</span></div><div class="result-actions"><button type="button" class="result-action" data-action="work-details" data-work="${escapeHTML(work.key)}">${svgIcon('file-text')}<span>Details</span></button><button type="button" class="result-action" data-action="cite-work" data-work="${escapeHTML(work.key)}">${svgIcon('quote')}<span>Cite / export</span></button><button type="button" class="result-action" data-action="remove-saved" data-work="${escapeHTML(work.key)}">${svgIcon('trash')}<span>Remove</span></button>${work.url ? `<a class="result-action" href="${escapeHTML(work.url)}" target="_blank" rel="noopener noreferrer">${svgIcon('external-link')}<span>Open source</span></a>` : ''}</div></article>`).join('');
   }
   function renderHistory() {
     updateIntro(); $('results-toolbar').hidden = false; $('results-heading').textContent = 'Recent searches'; $('results-subheading').textContent = 'Stored locally on this device'; $('pagination').hidden = true;
@@ -901,6 +934,43 @@
   function showAboutData() {
     openModal('Sources, coverage, and metrics', `<p>Acadia combines publicly accessible bibliographic metadata from three sources:</p><ul class="about-sources-list"><li><strong>OpenAlex</strong> supplies work, author, journal, institution, citation, and open-access metadata.</li><li><strong>Crossref</strong> supplements DOI registration records, publisher metadata, and reference counts.</li><li><strong>Semantic Scholar</strong> contributes scholarly graph search, citation counts, abstracts, and open-access PDF links where available.</li></ul><p>The APIs are queried from the browser. Public services can rate-limit requests, change their schemas, or be unavailable; Acadia continues with whichever indexes respond. Duplicate works are merged using DOI and normalized title. Citation totals may differ across sources because their corpora and matching rules differ.</p><p>Source-context scores are explanatory heuristics based on known domains and the metadata's declared source type. They are not a quality score for the paper, a guarantee of peer review, or a claim that a result is factually correct. A repository copy may be a preprint or accepted manuscript.</p><p>Saved papers, search history, and alerts use this browser's local storage. They are not synced to an account or uploaded to Acadia's servers. Clearing browser data removes them.</p><p>Patent and case-law searches currently open specialist indexes directly because no public, unrestricted, browser-ready API covers those collections comprehensively.</p>`, 'ABOUT THE INDEX');
   }
+  function showResearchGuide() {
+    const content = `<p>Acadia combines scholarly metadata indexes. It is a discovery and reference tool, not a peer-review service or a guarantee that every paper is correct. Hover over labels with a help tooltip for a short definition.</p>
+      <h3>Search and filters</h3>
+      <dl class="guide-list">
+        <dt>Keywords and exact phrases</dt><dd>Search by topic, title, author, journal, or a DOI. Advanced fields can narrow to a phrase, author, publication, title field, or publication type where the index supports it.</dd>
+        <dt>Publication year</dt><dd>Restricts results to the publication-year range recorded by the indexes. Missing dates cannot match a year range.</dd>
+        <dt>Minimum citations</dt><dd>Hides works with lower reported citation counts. Counts vary between indexes and may be incomplete, delayed, or updated at different times.</dd>
+        <dt>Limit to websites</dt><dd>Accepts comma-separated hostnames such as <code>nature.com, arxiv.org, nih.gov</code>. Acadia keeps records whose available publisher, repository, or PDF landing links match one of those domains. It filters the index results returned for the query; it does not crawl every page on those websites. Records with no matching URL metadata are left out.</dd>
+        <dt>Open access only</dt><dd>Shows works where an index reports a freely readable copy or open-access status. The copy may be a repository manuscript or preprint rather than the final formatted publisher version.</dd>
+        <dt>Sort by relevance, date, or citations</dt><dd>Relevance uses the search/index ranking; newest sorts by indexed publication year; most cited sorts by the available citation count.</dd>
+      </dl>
+      <h3>Result actions and icons</h3>
+      <dl class="guide-list">
+        <dt>${svgIcon('file-text')} Details</dt><dd>Opens the complete metadata Acadia has for a work, including its abstract, identifiers, available copies, and source information.</dd>
+        <dt>${svgIcon('bookmark')} Save</dt><dd>Saves the record to this browser's local library. It is not synced to an account or other device.</dd>
+        <dt>${svgIcon('quote')} Cite</dt><dd>Formats a reference in APA, MLA, Chicago, IEEE, BibTeX, or RIS. Always compare the generated reference with the original publication before submitting it.</dd>
+        <dt>${svgIcon('align-left')} Show abstract</dt><dd>Expands or collapses the abstract included by an index. No abstract text does not mean the paper has no abstract.</dd>
+        <dt>${svgIcon('quote')} Cited by</dt><dd>Opens indexed works that cite this paper where citation-link data is available. It is not necessarily a complete citation list.</dd>
+        <dt>${svgIcon('network')} Related articles</dt><dd>Shows works an index identifies as related. Relatedness does not establish that the paper is trustworthy or high quality.</dd>
+        <dt>${svgIcon('layers')} All versions</dt><dd>Shows available publisher, repository, or other indexed copies of the same work. Compare dates and version labels before citing a copy.</dd>
+        <dt>${svgIcon('unlock')} Open access / PDF</dt><dd>Opens a freely available full-text link or PDF if the index provided one. Availability can change, and some copies can be preprints.</dd>
+      </dl>
+      <h3>Research terms</h3>
+      <dl class="guide-list">
+        <dt>DOI (Digital Object Identifier)</dt><dd>A persistent identifier used to find a scholarly work. A DOI usually looks like <code>10.xxxx/xxxxx</code>; the link <code>https://doi.org/...</code> resolves it to a current destination. Having a DOI does not by itself prove quality or peer review.</dd>
+        <dt>Abstract</dt><dd>A short summary of a paper's question, methods, findings, and sometimes limitations. It is not the full paper.</dd>
+        <dt>Metadata</dt><dd>Descriptive information such as title, authors, journal, year, DOI, identifiers, and links. Metadata errors or missing fields can happen.</dd>
+        <dt>Citations</dt><dd>Other works that an index has linked as citing a paper. Counts differ because databases cover different sources and resolve references differently; a high count is not a quality score.</dd>
+        <dt>Open access</dt><dd>Research available to read without a subscription under the available access conditions. A record tagged open access may point to a manuscript repository instead of the publisher's version of record.</dd>
+        <dt>Preprint</dt><dd>A version shared before formal journal peer review or outside the final peer-reviewed publication process. Check the published version before relying on it.</dd>
+        <dt>Source context indicator</dt><dd>The small score next to each result is a heuristic based on source/domain and publication metadata. It is not a paper-level fact-check, peer-review certificate, or ranking of scientific truth.</dd>
+        <dt>Index source names</dt><dd>OpenAlex provides broad work/author/source metadata; Crossref provides DOI registration and publisher-deposited metadata; Semantic Scholar provides scholarly graph, citation, abstract, and access metadata where available.</dd>
+        <dt>h-index and i10-index</dt><dd>Author-profile metrics that summarize parts of a publication/citation record. Their values depend on the data source and coverage; they are not complete measures of research quality.</dd>
+      </dl>
+      <p class="warning-note">How to use the signals: follow the DOI or publisher record, check publication status and dates, read methods and limitations, and compare important claims with independent sources. Acadia's indicators help you navigate metadata; they do not certify that a paper is reliable.</p>`;
+    openModal('Acadia research guide', content, 'SEARCH HELP & GLOSSARY');
+  }
   function getSelectedWorks() { return [...state.selected].map((key) => state.works.get(key)).filter(Boolean); }
   function exportLibrary(format) {
     if (!state.library.length) { toast('Your library is empty.'); return; }
@@ -914,7 +984,7 @@
     getCurrentFilters(); state.page = 1; runCurrentSearch(1);
   }
   function resetFilters() {
-    state.filters = { from: '', to: '', sort: 'relevance', type: '', minCitations: 0, openAccess: false, withAbstract: false };
+    state.filters = { from: '', to: '', sort: 'relevance', type: '', minCitations: 0, openAccess: false, withAbstract: false, domains: '' };
     state.advanced.type = '';
     $('advanced-type').value = ''; loadFilters();
     if (state.query) runCurrentSearch(1); else toast('Filters cleared.');
@@ -949,7 +1019,7 @@
       const target = $(button.dataset.target); if (!target || !work) return;
       const expanded = button.getAttribute('aria-expanded') === 'true';
       target.textContent = expanded ? (work.abstract ? (work.abstract.length > 460 ? `${work.abstract.slice(0, 457).trim()}…` : work.abstract) : 'Abstract not available in the indexed metadata.') : (work.abstract || 'No abstract is available for this record.');
-      target.classList.toggle('muted', expanded && !work.abstract); button.setAttribute('aria-expanded', expanded ? 'false' : 'true'); button.textContent = expanded ? (work.abstract ? 'Show abstract' : 'Metadata') : 'Hide abstract';
+      target.classList.toggle('muted', expanded && !work.abstract); button.setAttribute('aria-expanded', expanded ? 'false' : 'true'); button.innerHTML = `${svgIcon('align-left')}<span>${expanded ? (work.abstract ? 'Show abstract' : 'Metadata') : 'Hide abstract'}</span>`;
     } else if (action === 'author-profile') openAuthorProfile(button.dataset.id);
     else if (action === 'entity-profile') openEntityProfile(button.dataset.id);
     else if (action === 'search-author') {
@@ -981,9 +1051,9 @@
 
   // Main UI events.
   $('search-form').addEventListener('submit', (event) => {
-    event.preventDefault(); state.query = $('query').value.trim(); state.page = 1; getCurrentFilters(); runCurrentSearch(1);
+    event.preventDefault(); state.query = $('query').value.trim(); state.page = 1; getCurrentFilters(); updateIntro(); runCurrentSearch(1);
   });
-  $('clear-query').addEventListener('click', () => { $('query').value = ''; state.query = ''; $('query').focus(); $('clear-query').classList.remove('visible'); });
+  $('clear-query').addEventListener('click', () => { $('query').value = ''; state.query = ''; $('query').focus(); $('clear-query').classList.remove('visible'); updateIntro(); syncSearchURL(); emptyState(); setStatus(''); });
   $('query').addEventListener('input', () => $('clear-query').classList.toggle('visible', !!$('query').value));
   $('view-nav').addEventListener('click', (event) => {
     const button = event.target.closest('[data-view]'); if (!button) return;
@@ -1002,6 +1072,8 @@
   $('previous-page').addEventListener('click', () => { if (state.page > 1) runCurrentSearch(state.page - 1); });
   $('next-page').addEventListener('click', () => { if (state.canNext) runCurrentSearch(state.page + 1); });
   $('about-data').addEventListener('click', showAboutData);
+  $('research-guide').addEventListener('click', showResearchGuide);
+  $('results').addEventListener('click', (event) => { if (event.target.closest('#open-guide-inline')) showResearchGuide(); });
   $('modal-close').addEventListener('click', closeModal);
   $('modal-root').addEventListener('click', (event) => { if (event.target.matches('[data-modal-close]')) closeModal(); });
   $('modal-content').addEventListener('change', (event) => { if (event.target.id === 'citation-style') updateCitationOutput(); });
